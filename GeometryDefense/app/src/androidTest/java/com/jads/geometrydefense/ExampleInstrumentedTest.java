@@ -1,4 +1,4 @@
-package com.jadsgeometrydefense;
+package com.jads.geometrydefense;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.jadsgeometrydefense", appContext.getPackageName());
+        assertEquals("com.jads.geometrydefense", appContext.getPackageName());
     }
 }

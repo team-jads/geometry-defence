@@ -1,4 +1,4 @@
-package com.jadsgeometrydefense;
+package com.jads.geometrydefense;
 
 import org.junit.Test;
 
