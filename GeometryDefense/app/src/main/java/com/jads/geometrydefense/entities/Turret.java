@@ -45,7 +45,10 @@ public class Turret extends GSprite {
         super.update();
         for (Enemy enemy : enemies) {
             if (isInRange(enemy) && getGCanvas().getAnimationTickCount() % 60 == 0 && bullets.size() != 0) {
-                fire(enemy);
+                if(!enemy.targeted ){
+                    fire(enemy);
+                    enemy.setTargeted(true);
+                }
             }
         }
     }

@@ -8,6 +8,7 @@ import stanford.androidlib.graphics.GObject;
 import stanford.androidlib.graphics.GSprite;
 
 public class Enemy extends GSprite {
+    boolean targeted = false;
 
     public Enemy(GObject turret, float dy) {
         super(turret);
@@ -17,6 +18,10 @@ public class Enemy extends GSprite {
     public void getHit(Bullet bullet) {
         setVisible(false);
         ((GameBoardCanvas)getGCanvas()).remove(this);
+    }
+
+    public void setTargeted(boolean isTarget) {
+        this.targeted = isTarget;
     }
 
     @Override
