@@ -6,7 +6,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Vector;
+import java.util.PriorityQueue;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * State
@@ -18,20 +20,24 @@ public class State {
     }
 
     private class Removable {
-        protected void setRemover(Remover remover) {
+        void setRemover(Remover remover) {
             this.remover = remover;
         }
 
-        protected void removeFromContainer() {
+        void removeFromContainer() {
             remover.remove();
             remover = null;
+        }
+
+        public boolean removed() {
+            return remover == null;
         }
 
         private Remover remover;
     }
 
-    private class Entity extends Removable {
-        protected Entity(State state) {
+    public final class Entity extends Removable {
+        public Entity(State state) {
             id = state.getNextId();
         }
 
@@ -39,21 +45,23 @@ public class State {
 
         private void addAttribute(Attribute attribute) {
             attributes.add(attribute);
-            attribute.setRemover(()->attributes.remove(attribute));
+            attribute.setRemover(() -> attributes.remove(attribute));
         }
 
         private HashSet<Attribute> attributes;
+        public Set<Attribute> currentAttributes = Collections.unmodifiableSet(attributes);
 
         private void addEffectInstance(EffectInstance effectInstance) {
             effectInstances.add(effectInstance);
-            effectInstance.setRemover(()->effectInstances.remove(effectInstance));
+            effectInstance.setRemover(() -> effectInstances.remove(effectInstance));
         }
 
         private HashSet<EffectInstance> effectInstances;
+        public Set<EffectInstance> currentEffectInstances = Collections.unmodifiableSet(effectInstances);
     }
 
-    private class Attribute extends Removable {
-        protected Attribute(State state, Entity entity, int type) {
+    public final class Attribute extends Removable {
+        public Attribute(State state, Entity entity, int type) {
             id = state.getNextId();
             this.entity = entity;
             this.type = type;
@@ -67,8 +75,8 @@ public class State {
         private int dx;
     }
 
-    private class EffectInstance extends Removable {
-        protected EffectInstance(State state, Entity entity, Effect effect) {
+    public final class EffectInstance extends Removable {
+        public EffectInstance(State state, Entity entity, Effect effect) {
             id = state.getNextId();
             this.entity = entity;
             this.effect = effect;
@@ -81,7 +89,7 @@ public class State {
         private int multuplicity;
     }
 
-    abstract public class Effect {
+    public abstract class Effect {
         public Effect(int priority, int attributeType) {
             this.priority = priority;
             this.attributeType = attributeType;
@@ -90,46 +98,80 @@ public class State {
         public final int priority;
         public final int attributeType;
 
-        public abstract int apply(int multiplicity, int x);
+        protected abstract int apply(int multiplicity, int x);
     }
 
-    abstract public class Event {
-        public Event(int t) {
+    private abstract class Event extends Removable implements Comparable<Event> {
+        private Event(int t) {
             this.t = t;
         }
 
         public final int t;
 
-        protected List<Event> apply(State state) {
-            return Collections.emptyList();
+        abstract void apply(State state);
+
+        abstract void unapply(State state);
+
+        private int priority;
+
+        @Override
+        public int compareTo(Event other) {
+            return t != other.t ? t - other.t : priority - other.priority;
         }
     }
 
-    public final class EntityCreated extends Event {
-        public EntityCreated(int t, Entity entity) {
+    public abstract class HigherOrderEvent extends Event {
+        public HigherOrderEvent(int t) {
+            super(t);
+        }
+
+        protected abstract List<Event> reduce(State state);
+
+        private List<Event> createdEvents;
+
+        void apply(State state) {
+            createdEvents = reduce(state);
+            state.queueEvents(createdEvents);
+        }
+
+        void unapply(State state) {
+            // clears all references to the created events, leaving them up for garbage collection
+            createdEvents.forEach(event -> event.removeFromContainer());
+            createdEvents = null;
+        }
+    }
+
+    public final class EntityAdded extends Event {
+        public EntityAdded(int t, Entity entity) {
             super(t);
             this.entity = entity;
         }
 
         public final Entity entity;
 
-        protected List<Event> apply(State state) {
+        void apply(State state) {
             state.addEntity(entity);
-            return super.apply(state);
+        }
+
+        void unapply(State state) {
+            entity.removeFromContainer();
         }
     }
 
-    public final class EntityDestroyed extends Event {
-        public EntityDestroyed(int t, Entity entity) {
+    public final class EntityRemoved extends Event {
+        public EntityRemoved(int t, Entity entity) {
             super(t);
             this.entity = entity;
         }
 
         public final Entity entity;
 
-        protected List<Event> apply(State state) {
+        void apply(State state) {
             entity.removeFromContainer();
-            return super.apply(state);
+        }
+
+        void unapply(State state) {
+            state.addEntity(entity);
         }
     }
 
@@ -147,9 +189,12 @@ public class State {
         public final int x;
         public final int dx;
 
-        protected List<Event> apply(State state) {
+        void apply(State state) {
             attribute.entity.addAttribute(attribute);
-            return super.apply(state);
+        }
+
+        void unapply(State state) {
+            attribute.removeFromContainer();
         }
     }
 
@@ -161,9 +206,12 @@ public class State {
 
         public final Attribute attribute;
 
-        protected List<Event> apply(State state) {
+        void apply(State state) {
             attribute.removeFromContainer();
-            return super.apply(state);
+        }
+
+        void unapply(State state) {
+            attribute.entity.addAttribute(attribute);
         }
     }
 
@@ -184,12 +232,16 @@ public class State {
         private int oldX;
         private int oldDx;
 
-        protected List<Event> apply(State state) {
+        void apply(State state) {
             oldX = attribute.x;
             oldDx = attribute.dx;
             attribute.x = x;
             attribute.dx = dx;
-            return super.apply(state);
+        }
+
+        void unapply(State state) {
+            attribute.x = oldX;
+            attribute.dx = oldDx;
         }
     }
 
@@ -203,9 +255,12 @@ public class State {
         public final EffectInstance effectInstance;
         public final int multiplicity;
 
-        protected List<Event> apply(State state) {
+        void apply(State state) {
             effectInstance.entity.addEffectInstance(effectInstance);
-            return super.apply(state);
+        }
+
+        void unapply(State state) {
+            effectInstance.removeFromContainer();
         }
     }
 
@@ -217,9 +272,12 @@ public class State {
 
         public final EffectInstance effectInstance;
 
-        protected List<Event> apply(State state) {
+        void apply(State state) {
             effectInstance.removeFromContainer();
-            return super.apply(state);
+        }
+
+        void unapply(State state) {
+            effectInstance.entity.addEffectInstance(effectInstance);
         }
     }
 
@@ -235,19 +293,23 @@ public class State {
 
         private int oldMultiplicity;
 
-        protected List<Event> apply(State state) {
+        void apply(State state) {
             oldMultiplicity = effectInstance.multuplicity;
             effectInstance.multuplicity = multiplicity;
-            return super.apply(state);
+        }
+
+        void unapply(State state) {
+            effectInstance.multuplicity = oldMultiplicity;
         }
     }
 
-    private LinkedList<Entity> entities;
+    private final LinkedList<Entity> entities = new LinkedList<>();
 
-    private Vector eventLog;
-    private ArrayDeque eventQueue;
+    private final ArrayDeque<Event> eventLog = new ArrayDeque<>();
+    private final PriorityQueue<Event> eventQueue = new PriorityQueue<>();
 
     private int nextId = 0;
+
     private int getNextId() {
         return nextId++;
     }
@@ -255,7 +317,52 @@ public class State {
     private void addEntity(Entity entity) {
         entities.add(entity);
         Iterator<Entity> it = entities.descendingIterator();
-        entity.setRemover(()->it.remove());
+        entity.setRemover(() -> it.remove());
+    }
+
+    private void queueEvents(List<Event> events) {
+        events.forEach(event -> {
+            event.priority = getNextId();
+            event.setRemover(() -> eventQueue.remove(event));
+        });
+        eventQueue.addAll(events);
+    }
+
+    private boolean running = false;
+
+    public void queueInitialEvents(List<Event> events) {
+        assert !running;
+        eventQueue.addAll(events);
+    }
+
+    private void backtrack(int t) {
+        while (!eventLog.isEmpty()) {
+            Event lastEvent = eventLog.getLast();
+            if (lastEvent.t < t) {
+                break;
+            }
+            eventLog.pollLast();
+            lastEvent.unapply(this);
+            eventQueue.add(lastEvent);
+        }
+    }
+
+    public void run() throws InterruptedException {
+        running = true;
+        int t = 0;
+        while (!eventQueue.isEmpty()) {
+            Event nextEvent = eventQueue.peek();
+            if (nextEvent.t < t) {
+                backtrack(nextEvent.t);
+                continue;
+            }
+            eventQueue.poll();
+            if (nextEvent.t != t) {
+                TimeUnit.MILLISECONDS.sleep(nextEvent.t - t);
+            }
+            nextEvent.apply(this);
+            eventLog.addLast(nextEvent);
+        }
     }
 
 }
