@@ -113,6 +113,7 @@ public class State {
         abstract void unapply(State state);
 
         private int priority;
+        private int oldNextId;
 
         @Override
         public int compareTo(Event other) {
@@ -344,6 +345,7 @@ public class State {
             }
             eventLog.pollLast();
             lastEvent.unapply(this);
+            nextId = lastEvent.oldNextId;
             eventQueue.add(lastEvent);
         }
     }
@@ -361,6 +363,7 @@ public class State {
             if (nextEvent.t != t) {
                 TimeUnit.MILLISECONDS.sleep(nextEvent.t - t);
             }
+            nextEvent.oldNextId = nextId;
             nextEvent.apply(this);
             eventLog.addLast(nextEvent);
         }
