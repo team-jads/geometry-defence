@@ -320,9 +320,10 @@ public class State {
         entity.setRemover(() -> it.remove());
     }
 
+    static private int nextEventPriority = 0; // this is just to preserve insertion order in the event priority queue
     private void queueEvents(List<Event> events) {
         events.forEach(event -> {
-            event.priority = getNextId();
+            event.priority = nextEventPriority++;
             event.setRemover(() -> eventQueue.remove(event));
         });
         eventQueue.addAll(events);
