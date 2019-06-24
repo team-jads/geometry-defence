@@ -14,13 +14,14 @@ public class Bullet extends GSprite {
     public Bullet(GObject object, Turret parent) {
         super(object);
         this.parent = parent;
-        this.setFillColor(GColor.BLUE);
+        this.setFillColor(GColor.BLACK);
         this.setLocation(object.getX(), object.getY());
+        this.setVisible(false);
     }
 
     public void fire(Enemy enemy) {
-        this.setVelocityX(25f);
-        this.setVelocityY(25f);
+        this.setVelocityX(15f);
+        this.setVelocityY(15f);
         this.enemy = enemy;
         this.setVisible(true);
         this.isFired = true;
@@ -28,8 +29,8 @@ public class Bullet extends GSprite {
 
     private void reset() {
         this.setVisible(false);
-        this.setLocation(parent.getX() + parent.getWidth() / 2 - 30f,
-                parent.getY() -30f);
+        this.setLocation(parent.getX() + parent.getWidth(),
+                parent.getY() + parent.getHeight() / 2 - 15f);
         this.isFired = false;
         this.enemy = null;
         parent.bullets.add(this);
@@ -38,8 +39,7 @@ public class Bullet extends GSprite {
 
     @Override
     public void update() {
-        if (isFired ) {
-
+        if (isFired) {
             float distx = enemy.getX() - getX();
             float disty = enemy.getY() - getY();
             double angle = Math.atan2(disty, distx);
