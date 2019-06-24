@@ -72,9 +72,7 @@ public class GameBoardCanvas extends GCanvas {
                     turret.getY() + turret.getHeight() / 2 - 15f, 15f, 15f), turret);
             turret.addBullet(bullet);
 
-            addSprite(turretSprite);
-            addSprite(turret);
-            addSprite(bullet);
+            addSprite(turretSprite, turret, bullet);
             focusedTurretLand.setTurret(turret);
         }
 
@@ -137,9 +135,7 @@ public class GameBoardCanvas extends GCanvas {
         GSprite topBorder = new GSprite(new GRect(0, 100f, getWidth(), 1));
         GSprite leftBorder = new GSprite(new GRect((float) getWidth() / 4, 100, 1, getHeight()));
         GSprite bottomBorder = new GSprite(new GRect(0, getHeight(), getWidth(), 1));
-        addSprite(topBorder);
-        addSprite(leftBorder);
-        addSprite(bottomBorder);
+        addSprite(topBorder, leftBorder, bottomBorder);
     }
 
 
@@ -185,8 +181,10 @@ public class GameBoardCanvas extends GCanvas {
         enemies.add(enemy);
     }
 
-    private void addSprite(GSprite sprite) {
-        gameSprites.add(sprite);
-        add(sprite);
+    private void addSprite(GSprite... sprites) {
+        for (GSprite sprite : sprites) {
+            gameSprites.add(sprite);
+            add(sprite);
+        }
     }
 }
