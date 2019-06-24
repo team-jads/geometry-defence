@@ -15,7 +15,7 @@ public class MainActivity extends AppCompatActivity {
 
         Button startGameButton;
         Button findPlayerButton;
-
+        Button scoreButton;
 
         startGameButton = findViewById(R.id.start_game);
         startGameButton.setOnClickListener(new View.OnClickListener() {
@@ -32,6 +32,15 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent findPlayerPage = new Intent(MainActivity.this, FindPlayerActivity.class);
                 startActivity(findPlayerPage);
+            }
+        });
+
+        scoreButton = findViewById(R.id.user_score);
+        scoreButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent scorePage = new Intent(MainActivity.this, ScoreActivity.class);
+                startActivity(scorePage);
             }
         });
 
