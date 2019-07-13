@@ -1,5 +1,6 @@
 package com.jads.geometrydefense;
 
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -192,8 +193,10 @@ public class GamePageActivity extends AppCompatActivity {
     }
 
     private void stopScreenRecording() {
+        canvas.pauseGame();
         Intent service = new Intent(this, ScreenRecordService.class);
         stopService(service);
+        canvas.resumeGame();
     }
 
     @Override
@@ -222,5 +225,6 @@ public class GamePageActivity extends AppCompatActivity {
         }
         return super.onKeyDown(keyCode, event);
     }
+
 }
 
