@@ -1,6 +1,6 @@
 package com.jads.geometrydefense;
 
-import android.net.Uri;
+import android.app.ActivityManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -21,8 +21,6 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.CheckBox;
-import android.widget.TextView;
 import android.widget.Toast;
 import android.view.KeyEvent;
 
@@ -63,13 +61,9 @@ public class GamePageActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (!gameStarted) {
-                    canvas.resumeGame();
-                    gameStarted = !gameStarted;
-                    startGame.setText("Pause");
+                    resumeGame();
                 } else {
-                    canvas.pauseGame();
-                    gameStarted = !gameStarted;
-                    startGame.setText("Start");
+                    pauseGame();
                 }
             }
         });
@@ -193,10 +187,31 @@ public class GamePageActivity extends AppCompatActivity {
     }
 
     private void stopScreenRecording() {
-        canvas.pauseGame();
+        pauseGame();
         Intent service = new Intent(this, ScreenRecordService.class);
         stopService(service);
+    }
+
+    private void pauseGame() {
+        canvas.pauseGame();
+        gameStarted = false;
+        startGame.setText("Start");
+    }
+
+    private void resumeGame() {
         canvas.resumeGame();
+        gameStarted = true;
+        startGame.setText("Pause");
+    }
+
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
