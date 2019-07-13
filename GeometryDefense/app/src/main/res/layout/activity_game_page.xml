@@ -34,6 +34,15 @@
             android:layout_alignParentLeft="true"
             android:fontFamily="@font/allerta_stencil"
             android:text="start" />
+
+        <Button
+            android:id="@+id/record"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="284dp"
+            android:fontFamily="@font/allerta_stencil"
+            android:text="Record" />
     </RelativeLayout>
 
 
