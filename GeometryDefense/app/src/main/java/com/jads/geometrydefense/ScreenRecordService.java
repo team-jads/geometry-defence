@@ -10,8 +10,10 @@ import android.graphics.Color;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.VirtualDisplay;
 import android.media.MediaRecorder;
+import android.media.MediaScannerConnection;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
+import android.net.Uri;
 import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
@@ -39,6 +41,8 @@ public class ScreenRecordService extends Service {
     private MediaProjection mMediaProjection;
     private MediaRecorder mMediaRecorder;
     private VirtualDisplay mVirtualDisplay;
+
+    private String videoFilePath="";
 
     @Override
     public void onCreate() {
@@ -106,8 +110,9 @@ public class ScreenRecordService extends Service {
         }
         mediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
         mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        mediaRecorder.setOutputFile(Environment.
-                getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES) + "/" + videoQuality + curTime + ".mp4");
+        videoFilePath = Environment.
+                getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES) + "/" + videoQuality + curTime + ".mp4";
+        mediaRecorder.setOutputFile(videoFilePath);
         mediaRecorder.setVideoSize(mScreenWidth, mScreenHeight);  //after setVideoSource(), setOutFormat()
         mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);  //after setOutputFormat()
         if (isAudio) {
@@ -138,8 +143,35 @@ public class ScreenRecordService extends Service {
         return mMediaProjection.createVirtualDisplay(TAG, mScreenWidth, mScreenHeight, mScreenDensity, DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR, mMediaRecorder.getSurface(), null, null);
     }
 
+    private void shareVideo() {
+        //Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+        //Necessary for publishing to Youtube
+        scanVideoFile();
+
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+        shareIntent.setType("video/mp4");
+        shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "GEOMETRY DEFENSE VIDEO");
+        shareIntent.putExtra(android.content.Intent.EXTRA_TEXT,"Gameplay");
+        shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse(videoFilePath));
+        //startActivityForResult(Intent.createChooser(shareIntent, "Share Your Video"), shareIntent);
+        shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(Intent.createChooser(shareIntent, "Share Your Video"));
+    }
+
+    private void scanVideoFile() {
+        MediaScannerConnection.scanFile(this, new String[] { videoFilePath }, null,
+                new MediaScannerConnection.OnScanCompletedListener() {
+                    public void onScanCompleted(String path, Uri uri) {
+                        Log.d(TAG, "onScanCompleted uri " + uri);
+                    }
+                });
+    }
+
     @Override
     public void onDestroy() {
+        shareVideo();
+
         super.onDestroy();
         Log.i(TAG, "Service onDestroy");
         stopForeground(true);
