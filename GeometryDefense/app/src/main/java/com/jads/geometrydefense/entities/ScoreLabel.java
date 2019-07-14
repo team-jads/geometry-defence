@@ -17,6 +17,11 @@ public class ScoreLabel extends GSprite {
         score++;
     }
 
+    public int getScore() {
+        return score;
+    }
+
+
     @Override
     public void update() {
         this.scoreLabel.setText(String.valueOf(score));

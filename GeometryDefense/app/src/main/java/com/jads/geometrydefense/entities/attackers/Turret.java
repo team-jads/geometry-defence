@@ -1,4 +1,6 @@
-package com.jads.geometrydefense.entities;
+package com.jads.geometrydefense.entities.attackers;
+
+import com.jads.geometrydefense.entities.enemies.Enemy;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -8,7 +10,7 @@ import stanford.androidlib.graphics.GRect;
 import stanford.androidlib.graphics.GSprite;
 
 public class Turret extends GSprite {
-    float range = 1000f;
+    float range = 2000f;
     float rate = 1; // 1 bullet/s
     ArrayList<Bullet> bullets = new ArrayList<>();
 
@@ -18,10 +20,14 @@ public class Turret extends GSprite {
     private HashSet<Enemy> enemies;
 
 
-    public Turret(GObject turret, HashSet<Enemy> enemies) {
+    public Turret(GObject turret) {
         super(turret);
+        this.rangeRec = new GSprite(new GRect(getCenterX() - range / 4, getCenterY() - range / 4, range / 2, range / 2));
+    }
+
+    public Turret(GObject turret, HashSet<Enemy> enemies) {
+        this(turret);
         this.enemies = enemies;
-        this.rangeRec = new GSprite(new GRect(getX(), getY(), range, range));
     }
 
 
@@ -37,9 +43,12 @@ public class Turret extends GSprite {
 
     private void fire(Enemy enemy) {
         Bullet bullet = bullets.remove(bullets.size() - 1);
-        bullet.fire(enemy);
+        bullet.dealDamage(enemy);
     }
 
+    public void setEnemies(HashSet<Enemy> enemies) {
+        this.enemies = enemies;
+    }
 
     @Override
     public void update() {
