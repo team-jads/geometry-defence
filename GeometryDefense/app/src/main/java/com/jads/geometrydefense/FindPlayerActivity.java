@@ -15,6 +15,7 @@ public class FindPlayerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_find_player);
 
         EditText menuText;
+        Button gotoUserCode;
 
         menuText = findViewById(R.id.goto_menu);
         menuText.setFocusable(false);
@@ -24,6 +25,18 @@ public class FindPlayerActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent menuPage = new Intent(FindPlayerActivity.this, MainActivity.class);
                 startActivity(menuPage);
+            }
+        });
+
+
+        gotoUserCode = findViewById(R.id.your_code);
+        gotoUserCode.setFocusable(false);
+        gotoUserCode.setClickable(true);
+        gotoUserCode.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent userCodePage = new Intent(FindPlayerActivity.this, UserQRCodeActivity.class);
+                startActivity(userCodePage);
             }
         });
 

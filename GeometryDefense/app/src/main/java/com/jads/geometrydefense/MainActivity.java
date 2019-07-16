@@ -1,6 +1,7 @@
 package com.jads.geometrydefense;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -30,7 +31,9 @@ public class MainActivity extends AppCompatActivity {
         findPlayerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent findPlayerPage = new Intent(MainActivity.this, FindPlayerActivity.class);
+                Intent findPlayerPage = new Intent(MainActivity.this, UserQRCodeActivity.class);
+                String getUsername = getIntent().getStringExtra("Username");
+                findPlayerPage.putExtra("Username", getUsername);
                 startActivity(findPlayerPage);
             }
         });
