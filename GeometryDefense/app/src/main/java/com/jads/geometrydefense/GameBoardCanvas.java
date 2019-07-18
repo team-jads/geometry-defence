@@ -2,24 +2,28 @@ package com.jads.geometrydefense;
 
 import android.content.Context;
 
-import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.support.v4.util.Pair;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.jads.geometrydefense.entities.Bullet;
-import com.jads.geometrydefense.entities.Enemy;
+import com.jads.geometrydefense.entities.attackers.bullets.Bullet;
+import com.jads.geometrydefense.entities.attackers.turrets.TurretType;
+import com.jads.geometrydefense.entities.enemies.Enemy;
 import com.jads.geometrydefense.entities.ScoreLabel;
-import com.jads.geometrydefense.entities.Turret;
-import com.jads.geometrydefense.entities.TurretLand;
+import com.jads.geometrydefense.entities.attackers.turrets.Turret;
+import com.jads.geometrydefense.entities.attackers.TurretLand;
+import com.jads.geometrydefense.entities.enemies.EnemyType;
+import com.jads.geometrydefense.interfaces.CompoundGSprite;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 
 import stanford.androidlib.AnimationTickListener;
-import stanford.androidlib.SimpleBitmap;
 import stanford.androidlib.graphics.GCanvas;
 import stanford.androidlib.graphics.GColor;
 import stanford.androidlib.graphics.GLabel;
@@ -28,17 +32,26 @@ import stanford.androidlib.graphics.GOval;
 import stanford.androidlib.graphics.GRect;
 import stanford.androidlib.graphics.GSprite;
 
+import static com.jads.geometrydefense.GameManager.getInstance;
+
 
 public class GameBoardCanvas extends GCanvas {
+    private GameManager gm;
+
     private final HashSet<Enemy> enemies = new HashSet<>();
     private final ArrayList<TurretLand> turretLands = new ArrayList<>();
     private final ArrayList<GSprite> gameSprites = new ArrayList<>();
+
+    private List<Point> realPath = new ArrayList<>();
+
 
     private TurretLand focusedTurretLand;
     private ScoreLabel scoreLabel;
 
     private boolean isNewGame = true;
-    private int enemyCount = 30;
+    private int enemyCount = 15;
+    private int cellWidth = 0;
+    private int cellHeight = 0;
     Random rand = new Random();
 
     public GameBoardCanvas(Context context, AttributeSet attrs) {
@@ -48,9 +61,70 @@ public class GameBoardCanvas extends GCanvas {
     @Override
     public void init() {
         setBackgroundColor(GColor.makeColor(72, 72, 72));
-        createBorder();
-        createTurretBase();
-        createScoreLabel();
+        gm = getInstance();
+//        createBorder();
+
+        int rows = gm.getMap().size();
+        int cols = gm.getMap().get(0).size();
+
+        cellWidth = getWidth() / cols;
+        cellHeight = getHeight() / rows;
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                float x = j * cellWidth;
+                float y = i * cellWidth;
+                if (GameManager.debugging()) {
+                    GSprite rec = new GSprite(new GRect(x, y, cellWidth, cellWidth));
+                    if (gm.getMap().get(i).get(j) == 1) {
+                        rec.setFillColor(GColor.makeColor(255, 69, 0));
+                    }
+                    addSprite(rec);
+                }
+
+
+                if (gm.getMap().get(i).get(j) != 1) {
+                    TurretLand turretLand = new TurretLand(new GRect(x, y, cellWidth, cellWidth));
+                    addSprite(turretLand);
+                    turretLands.add(turretLand);
+                }
+            }
+        }
+
+        List<Point> conceptPath = gm.getPath();
+        for (int i = 0; i < conceptPath.size(); i++) {
+            int x = conceptPath.get(i).y * cellWidth;
+            int y = conceptPath.get(i).x * cellWidth;
+            realPath.add(new Point(x + cellWidth / 4, y + cellWidth / 4));
+        }
+
+        // Extra path point to make enemy disappear
+        realPath.add(new Point(realPath.get(realPath.size() - 1).x,
+                (int) realPath.get(realPath.size() - 1).y + cellWidth));
+
+        setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    focusOff();
+                    float touchingX = event.getX();
+                    float touchingY = event.getY();
+                    Pair pair = isTouchingTurretBase(touchingX, touchingY);
+                    if ((boolean) pair.first) {
+                        TurretLand land = (TurretLand) pair.second;
+                        focusOn(land);
+                    }
+                }
+                return false;
+            }
+        });
+
+//        GSprite topBorder = new GSprite(new GRect(0, 100f, getWidth(), 1));
+//        GSprite leftBorder = new GSprite(new GRect((float) getWidth() / 4, 100, 1, getHeight()));
+//        GSprite bottomBorder = new GSprite(new GRect(0, getHeight(), getWidth(), 1));
+//        addSprite(topBorder, leftBorder, bottomBorder);
+//        createTurretBase();
+//        createScoreLabel();
     }
 
     private void createScoreLabel() {
@@ -59,20 +133,21 @@ public class GameBoardCanvas extends GCanvas {
         addSprite(label);
     }
 
-    public void onTowerSelected() {
+    public void onTowerSelected(TurretType turretType) {
         if (!focusedTurretLand.isOccupied()) {
-            SimpleBitmap bitmap = SimpleBitmap.with(this);
-            Bitmap scaled = bitmap.scaleToWidth(R.drawable.tower_icon, getWidth() / 6.5f);
-            GSprite turretSprite = new GSprite(scaled,
-                    focusedTurretLand.getX() + 15, focusedTurretLand.getY() + 15);
-            turretSprite.setLocation(focusedTurretLand.getX() + 15, focusedTurretLand.getY() + 15);
-            Turret turret = new Turret(turretSprite, enemies);
+            Log.v("hashd", turretType.toString());
+            Turret turret = gm.createTurret(turretType, this);
+            turret.setLocation(focusedTurretLand.getX() + 10, focusedTurretLand.getY() + 10);
+            turret.setEnemies(enemies);
 
-            Bullet bullet = new Bullet(new GOval(turret.getX() + turret.getWidth(),
-                    turret.getY() + turret.getHeight() / 2 - 15f, 15f, 15f), turret);
-            turret.addBullet(bullet);
+            addSprite(turret);
 
-            addSprite(turretSprite, turret, bullet);
+            if (GameManager.debugging()) {
+                float range = Turret.testingRange;
+                GOval oval = new GOval(focusedTurretLand.getCenterX() - range / 4, focusedTurretLand.getCenterY() - range / 4, range / 2, range / 2);
+                add(oval);
+            }
+
             focusedTurretLand.setTurret(turret);
         }
 
@@ -104,33 +179,6 @@ public class GameBoardCanvas extends GCanvas {
     }
 
 
-    private void createTurretBase() {
-        int interval = getHeight() / 5;
-        float landWidth = (float) (interval * 0.6);
-        float margin = (float) (interval * 0.9);
-        for (int i = 0; i < 5; i++) {
-            TurretLand turretLand = new TurretLand(new GRect(40f, 180f + i * margin, landWidth, landWidth));
-            addSprite(turretLand);
-            turretLands.add(turretLand);
-            setOnTouchListener(new OnTouchListener() {
-                @Override
-                public boolean onTouch(View view, MotionEvent event) {
-                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                        focusOff();
-                        float x = event.getX();
-                        float y = event.getY();
-                        Pair pair = isTouchingTurretBase(x, y);
-                        if ((boolean) pair.first) {
-                            TurretLand land = (TurretLand) pair.second;
-                            focusOn(land);
-                        }
-                    }
-                    return false;
-                }
-            });
-        }
-    }
-
     private void createBorder() {
         GSprite topBorder = new GSprite(new GRect(0, 100f, getWidth(), 1));
         GSprite leftBorder = new GSprite(new GRect((float) getWidth() / 4, 100, 1, getHeight()));
@@ -141,7 +189,7 @@ public class GameBoardCanvas extends GCanvas {
 
     public void resumeGame() {
         if (isNewGame) {
-            animate(60, new AnimationTickListener() {
+            animate(GameManager.FPS, new AnimationTickListener() {
                 @Override
                 public void onAnimateTick() {
                     canvasOnDraw();
@@ -159,30 +207,54 @@ public class GameBoardCanvas extends GCanvas {
     }
 
     private void canvasOnDraw() {
-        if (getAnimationTickCount() % 60 == 0 && enemyCount != 0) {
-            addNewEnemy();
+        int tickCount = getAnimationTickCount();
+        if (tickCount % 90 == 0 && enemyCount != 0) {
+            if (rand.nextBoolean()) {
+                addNewEnemy(EnemyType.OVAL_ENEMY);
+            } else {
+                addNewEnemy(EnemyType.SQUARE_ENEMY);
+            }
+
             enemyCount--;
         }
+
+
         for (GSprite sprite : gameSprites) {
             sprite.update();
         }
     }
 
+    public int getCellWidth() {
+        return cellWidth;
+    }
+
+    public int getCellHeight() {
+        return cellHeight;
+    }
+
     @Override
     public void remove(GObject obj) {
         super.remove(obj);
-        enemies.remove(obj);
+        if (obj instanceof Enemy) {
+            enemies.remove(obj);
+        }
     }
 
-    private void addNewEnemy() {
-        Enemy enemy = new Enemy(new GOval(rand.nextInt(500) + 400f, 100f, 100f, 100f),
-                4f, rand.nextInt(2) + 1, scoreLabel);
+    private void addNewEnemy(EnemyType enemyType) {
+//        OvalEnemy enemy = new OvalEnemy(new GOval(100f, 100f), 2, scoreLabel, realPath);
+        Enemy enemy = gm.createEnemy(enemyType, this);
+        enemy.setEnemyPath(realPath);
         addSprite(enemy);
         enemies.add(enemy);
     }
 
-    private void addSprite(GSprite... sprites) {
+    public void addSprite(GSprite... sprites) {
         for (GSprite sprite : sprites) {
+            if (sprite instanceof CompoundGSprite) {
+                for (GSprite child : ((CompoundGSprite) sprite).getCompoundChildren()) {
+                    addSprite(child);
+                }
+            }
             gameSprites.add(sprite);
             add(sprite);
         }

@@ -5,7 +5,7 @@ android {
     buildToolsVersion "29.0.0"
     defaultConfig {
         applicationId "com.jads.geometrydefense"
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
@@ -15,6 +15,13 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    repositories {
+        mavenCentral()
+
+        maven {
+            url "https://raw.github.com/embarkmobile/zxing-android-minimal/mvn-repo/maven-repository/"
         }
     }
 }
@@ -28,4 +35,9 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     implementation 'org.jetbrains:annotations-java5:15.0'
     implementation files('libs/stanford-android-lib.jar')
+
+    // Zxing libraries
+    implementation 'com.journeyapps:zxing-android-embedded:3.2.0@aar'
+    implementation 'com.google.zxing:core:3.2.1'
+
 }

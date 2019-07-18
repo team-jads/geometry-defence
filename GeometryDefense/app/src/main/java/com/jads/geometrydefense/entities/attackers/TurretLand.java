@@ -1,12 +1,9 @@
-package com.jads.geometrydefense.entities;
+package com.jads.geometrydefense.entities.attackers;
 
-import android.graphics.BitmapFactory;
-
-import java.util.ArrayList;
+import com.jads.geometrydefense.entities.attackers.turrets.Turret;
 
 import stanford.androidlib.graphics.GColor;
 import stanford.androidlib.graphics.GObject;
-import stanford.androidlib.graphics.GRect;
 import stanford.androidlib.graphics.GSprite;
 
 public class TurretLand extends GSprite {
@@ -21,6 +18,7 @@ public class TurretLand extends GSprite {
 
     public Turret setTurret(Turret turret) {
         this.turret = turret;
+        isOccupied = true;
         return this.turret;
     }
 
@@ -35,5 +33,6 @@ public class TurretLand extends GSprite {
     public boolean isOccupied() {
         return isOccupied;
     }
+
 
 }

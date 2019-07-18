@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
+
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
@@ -24,13 +25,17 @@ import android.view.View.OnClickListener;
 import android.widget.Toast;
 import android.view.KeyEvent;
 
-import com.jads.geometrydefense.entities.TurretLand;
+import com.jads.geometrydefense.entities.attackers.TurretLand;
+
+import com.jads.geometrydefense.entities.attackers.turrets.TurretType;
 
 public class GamePageActivity extends AppCompatActivity {
 
     private Button startGame;
     private GameBoardCanvas canvas;
-    private ImageView tower;
+    private ImageView basicTower;
+    private ImageView movementSlowTower;
+    private View towerMenu;
     private boolean gameStarted = false;
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -56,7 +61,10 @@ public class GamePageActivity extends AppCompatActivity {
         setContentView(R.layout.activity_game_page);
         startGame = findViewById(R.id.start);
         canvas = findViewById(R.id.game_view);
-        tower = findViewById(R.id.tower);
+        basicTower = findViewById(R.id.basic_tower);
+        movementSlowTower = findViewById(R.id.movement_slow_tower);
+        towerMenu = findViewById(R.id.tower_menu);
+
         startGame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -68,10 +76,18 @@ public class GamePageActivity extends AppCompatActivity {
             }
         });
 
-        tower.setOnClickListener(new View.OnClickListener() {
+        // TODO: Write a recycleview or listview here instead of setting of onclick for every tower
+        basicTower.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                canvas.onTowerSelected();
+                canvas.onTowerSelected(TurretType.BASIC_TURRET);
+            }
+        });
+
+        movementSlowTower.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                canvas.onTowerSelected(TurretType.MOVEMENT_SLOW_TURRET);
             }
         });
 
@@ -102,11 +118,11 @@ public class GamePageActivity extends AppCompatActivity {
     }
 
     public void focusOn() {
-        tower.setVisibility(View.VISIBLE);
+        towerMenu.setVisibility(View.VISIBLE);
     }
 
     public void focusOff() {
-        tower.setVisibility(View.GONE);
+        towerMenu.setVisibility(View.GONE);
     }
 
     public boolean checkSelfPermission(String permission, int requestCode) {
