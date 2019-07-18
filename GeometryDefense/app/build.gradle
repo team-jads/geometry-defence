@@ -17,6 +17,13 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    repositories {
+        mavenCentral()
+
+        maven {
+            url "https://raw.github.com/embarkmobile/zxing-android-minimal/mvn-repo/maven-repository/"
+        }
+    }
 }
 
 dependencies {
@@ -28,4 +35,9 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     implementation 'org.jetbrains:annotations-java5:15.0'
     implementation files('libs/stanford-android-lib.jar')
+
+    // Zxing libraries
+    implementation 'com.journeyapps:zxing-android-embedded:3.2.0@aar'
+    implementation 'com.google.zxing:core:3.2.1'
+
 }

@@ -9,14 +9,17 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen" >
-        <activity android:name=".ScoreActivity"></activity>
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen"
+
+        >
+        <activity android:name=".ScoreActivity"/>
+        <activity android:name="UserQRCodeActivity"/>
         <activity android:name=".FindPlayerActivity" />
         <activity android:name=".GamePageActivity" />
-        <activity android:name=".MainActivity">
-            <intent-filter>
+        <activity android:name=".MainActivity" />
+        <activity android:name=".LoginActivity" >
+            <intent-filter >
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -25,5 +28,9 @@
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
     </application>
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.hardware.camera" />
+    <uses-permission android:name="android.hardware.camera.autofocus" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
 </manifest>
