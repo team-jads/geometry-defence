@@ -2,17 +2,23 @@ package com.jads.geometrydefense.entities.enemies;
 
 import android.graphics.Point;
 
+import com.jads.geometrydefense.GameBoardCanvas;
+import com.jads.geometrydefense.entities.HealthBar;
 import com.jads.geometrydefense.entities.ScoreLabel;
+import com.jads.geometrydefense.interfaces.CompoundGSprite;
 import com.jads.geometrydefense.interfaces.Damageable;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import stanford.androidlib.graphics.GColor;
 import stanford.androidlib.graphics.GObject;
 
+import stanford.androidlib.graphics.GRect;
 import stanford.androidlib.graphics.GSprite;
 
 
-public abstract class Enemy extends GSprite implements Damageable {
+public abstract class Enemy extends GSprite implements Damageable, CompoundGSprite {
 
     protected int health;
     protected ScoreLabel label;
@@ -25,21 +31,29 @@ public abstract class Enemy extends GSprite implements Damageable {
     protected float movingSpeed = 0.02f;
     protected int counter = 1;
 
-    public Enemy(GObject turret, int health, ScoreLabel label, List<Point> path) {
-        super(turret);
-        this.health = health;
-        this.label = label;
-        this.path = path;
+    protected HealthBar healthBar;
 
-        previousPoint = path.get(0);
-        nextPoint = path.get(1);
-//        if (this.health == 2) {
-//            this.setFillColor(GColor.makeColor(255, 69, 0));
-//        } else {
-//            this.setFillColor(GColor.makeColor(255, 160, 122));
-//        }
-
+    public Enemy(GObject object) {
+        super(object);
+        healthBar = new HealthBar(this, health);
     }
+
+    public void initilizeHealth(int health) {
+        this.health = health;
+        healthBar.initilizeHealth(health);
+    }
+//
+//    public Enemy() {
+//        super();
+//    }
+
+//    public Enemy(GObject object, int health, ScoreLabel label, List<Point> path) {
+//        super(object);
+//        this.health = health;
+//        this.label = label;
+//        this.path = path;
+//
+//    }
 
 //    public void getHit(Bullet bullet) {
 //        if (--health <= 0) {
@@ -53,11 +67,54 @@ public abstract class Enemy extends GSprite implements Damageable {
 //        }
 //    }
 
-    private void destoryMySelf() {
+
+    @Override
+    public void slowMovement(float slowPercentage) {
+        movingSpeed = movingSpeed * slowPercentage;
+    }
+
+    @Override
+    public GSprite setLocation(float x, float y) {
+        healthBar.setLocation(x, y);
+        return super.setLocation(x, y);
+    }
+
+    protected void destory() {
+        destoryCompoundChildren();
         setVisible(false);
         if (getGCanvas() != null) {
-            getGCanvas().remove(this);
+            GameBoardCanvas g = (GameBoardCanvas) getGCanvas();
+            g.remove(this);
         }
+    }
+
+    @Override
+    public void destoryCompoundChildren() {
+        healthBar.destory();
+    }
+
+    public void setEnemyPath(List<Point> path) {
+        this.path = path;
+        this.previousPoint = path.get(0);
+        this.nextPoint = path.get(1);
+    }
+
+    @Override
+    public List<GSprite> getCompoundChildren() {
+        return new ArrayList<GSprite>() {{
+            add(healthBar);
+        }};
+    }
+
+    @Override
+    public void receiveDamage(int damage) {
+        health -= damage;
+        if (health <= 0) {
+            destory();
+        } else {
+            healthBar.updateHealth(health);
+        }
+
     }
 
     @Override
@@ -76,7 +133,7 @@ public abstract class Enemy extends GSprite implements Damageable {
             float newY = (float) (nextPoint.y * movingProgress + previousPoint.y * (1.0 - movingProgress));
             setLocation(newX, newY);
             if (movingProgress >= 0.75f && counter + 1 == path.size()) {
-                destoryMySelf();
+                destory();
             }
         }
 

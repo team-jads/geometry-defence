@@ -1,4 +1,4 @@
-package com.jads.geometrydefense.entities.attackers;
+package com.jads.geometrydefense.entities.attackers.bullets;
 
 import com.jads.geometrydefense.interfaces.Damager;
 

@@ -1,5 +1,7 @@
 package com.jads.geometrydefense.entities.attackers;
 
+import com.jads.geometrydefense.entities.attackers.turrets.Turret;
+
 import stanford.androidlib.graphics.GColor;
 import stanford.androidlib.graphics.GObject;
 import stanford.androidlib.graphics.GSprite;

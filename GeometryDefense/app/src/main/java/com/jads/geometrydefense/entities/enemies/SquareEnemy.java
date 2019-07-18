@@ -3,11 +3,11 @@ package com.jads.geometrydefense.entities.enemies;
 import stanford.androidlib.graphics.GColor;
 import stanford.androidlib.graphics.GObject;
 
-public class OvalEnemy extends Enemy {
-
-    public OvalEnemy(GObject object) {
+public class SquareEnemy extends Enemy {
+    public SquareEnemy(GObject object) {
         super(object);
-        initilizeHealth(2);
-        this.setFillColor(GColor.makeColor(255, 69, 0));
+        initilizeHealth(3);
+        this.setFillColor(GColor.makeColor(204, 0, 102));
     }
+
 }

@@ -1,4 +1,4 @@
-package com.jads.geometrydefense.entities.attackers;
+package com.jads.geometrydefense.entities.attackers.turrets;
 
 public enum TurretType {
     BASIC_TURRET,

@@ -6,7 +6,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
-import com.jads.geometrydefense.entities.attackers.TurretType;
+import com.jads.geometrydefense.entities.attackers.turrets.TurretType;
 
 public class GamePageActivity extends AppCompatActivity {
 
