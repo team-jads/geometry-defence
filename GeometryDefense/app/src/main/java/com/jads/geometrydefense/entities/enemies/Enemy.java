@@ -3,25 +3,26 @@ package com.jads.geometrydefense.entities.enemies;
 import android.graphics.Point;
 
 import com.jads.geometrydefense.GameBoardCanvas;
+import com.jads.geometrydefense.GameManager;
 import com.jads.geometrydefense.entities.HealthBar;
-import com.jads.geometrydefense.entities.ScoreLabel;
 import com.jads.geometrydefense.interfaces.CompoundGSprite;
 import com.jads.geometrydefense.interfaces.Damageable;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import stanford.androidlib.graphics.GColor;
 import stanford.androidlib.graphics.GObject;
 
-import stanford.androidlib.graphics.GRect;
 import stanford.androidlib.graphics.GSprite;
 
 
 public abstract class Enemy extends GSprite implements Damageable, CompoundGSprite {
 
-    protected int health;
-    protected ScoreLabel label;
+    protected GameManager gm;
+
+
+    protected int currentHealth;
+    protected int totalHealth;
     protected List<Point> path;
 
     protected Point previousPoint;
@@ -29,43 +30,22 @@ public abstract class Enemy extends GSprite implements Damageable, CompoundGSpri
 
     protected float movingProgress = 0;
     protected float movingSpeed = 0.02f;
+//        protected float movingSpeed = 0.1f;
     protected int counter = 1;
 
     protected HealthBar healthBar;
 
     public Enemy(GObject object) {
         super(object);
-        healthBar = new HealthBar(this, health);
+        healthBar = new HealthBar(this, totalHealth);
+        gm = GameManager.getInstance();
     }
 
     public void initilizeHealth(int health) {
-        this.health = health;
+        this.totalHealth = health;
+        this.currentHealth = health;
         healthBar.initilizeHealth(health);
     }
-//
-//    public Enemy() {
-//        super();
-//    }
-
-//    public Enemy(GObject object, int health, ScoreLabel label, List<Point> path) {
-//        super(object);
-//        this.health = health;
-//        this.label = label;
-//        this.path = path;
-//
-//    }
-
-//    public void getHit(Bullet bullet) {
-//        if (--health <= 0) {
-//            label.updateScore();
-//            setVisible(false);
-//            if (getGCanvas() != null) {
-//                getGCanvas().remove(this);
-//            }
-//        } else {
-//            this.setFillColor(GColor.makeColor(255, 160, 122));
-//        }
-//    }
 
 
     @Override
@@ -108,11 +88,12 @@ public abstract class Enemy extends GSprite implements Damageable, CompoundGSpri
 
     @Override
     public void receiveDamage(int damage) {
-        health -= damage;
-        if (health <= 0) {
+        currentHealth -= damage;
+        if (currentHealth <= 0) {
+            gm.onEnemyDeath(totalHealth);
             destory();
         } else {
-            healthBar.updateHealth(health);
+            healthBar.updateHealth(currentHealth);
         }
 
     }
@@ -133,6 +114,7 @@ public abstract class Enemy extends GSprite implements Damageable, CompoundGSpri
             float newY = (float) (nextPoint.y * movingProgress + previousPoint.y * (1.0 - movingProgress));
             setLocation(newX, newY);
             if (movingProgress >= 0.75f && counter + 1 == path.size()) {
+                gm.onEnemyEscape(totalHealth);
                 destory();
             }
         }

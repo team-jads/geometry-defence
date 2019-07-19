@@ -19,11 +19,34 @@
         android:orientation="horizontal">
 
         <LinearLayout
+            android:id="@+id/operation_menu"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            android:layout_toRightOf="@id/record">
+
+            <Button
+                android:id="@+id/sell_tower"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:text="SELL" />
+
+            <Button
+                android:id="@+id/upgrade_tower"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:text="UPGRADE" />
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/tower_menu"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_toRightOf="@id/record"
             android:orientation="horizontal"
+            android:visibility="gone"
             android:weightSum="2">
 
             <ImageView

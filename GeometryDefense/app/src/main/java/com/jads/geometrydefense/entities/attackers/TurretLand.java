@@ -1,5 +1,8 @@
 package com.jads.geometrydefense.entities.attackers;
 
+import android.util.Log;
+
+import com.jads.geometrydefense.GameManager;
 import com.jads.geometrydefense.entities.attackers.turrets.Turret;
 
 import stanford.androidlib.graphics.GColor;
@@ -20,6 +23,50 @@ public class TurretLand extends GSprite {
         this.turret = turret;
         isOccupied = true;
         return this.turret;
+    }
+
+    public int getUpgradePrice() {
+        if (turret != null) {
+            return turret.getUpgradePrice();
+        }
+        return Integer.MAX_VALUE;
+    }
+
+    public void upgradeTower() {
+        if (turret != null) {
+            turret.towerUpgrade();
+        }
+    }
+
+    public boolean isUpgradable() {
+        if (turret != null) {
+            return turret.isUpgradable();
+        } else {
+            return false;
+        }
+    }
+
+    public int getBuildPrice() {
+        if (turret != null) {
+            return turret.getBuildPrice();
+        }
+        return Integer.MAX_VALUE;
+    }
+
+
+    public int getSellingPrice() {
+        if (turret != null) {
+            return turret.getSellingPrice();
+        }
+        return 0;
+    }
+
+
+    public void sellTurret() {
+        isOccupied = false;
+        GameManager gm = GameManager.getInstance();
+        gm.setPlayerGold(gm.getPlayerGold() + getSellingPrice());
+        turret.destoryCompoundChildren();
     }
 
     public void focusOn() {

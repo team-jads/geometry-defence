@@ -1,7 +1,9 @@
 package com.jads.geometrydefense.entities.attackers.turrets;
 
+import android.graphics.Bitmap;
 import android.util.Log;
 
+import com.jads.geometrydefense.GameBoardCanvas;
 import com.jads.geometrydefense.GameManager;
 import com.jads.geometrydefense.entities.attackers.bullets.Bullet;
 import com.jads.geometrydefense.entities.enemies.Enemy;
@@ -17,9 +19,12 @@ import stanford.androidlib.graphics.GSprite;
 
 public class Turret extends GSprite implements CompoundGSprite {
     public static float testingRange = 1500f;
-    protected int fireRate = 2; // number of bullet/s
+    protected int fireRate = 1; // number of bullet/s
+    protected boolean isUpgradable = true;
     protected Bullet bulletPrototype;
     protected float range = 1500f;
+    protected int buildPrice = 0;
+    protected int upgradePrice = 0;
     private float bulletFireProcess = 1;
     private float frameProgress = (float) fireRate / GameManager.FPS;
     private volatile boolean canFireNextBullet = true;
@@ -56,6 +61,16 @@ public class Turret extends GSprite implements CompoundGSprite {
         }
     }
 
+    protected void upgradeTower() {
+        if (isUpgradable) {
+            isUpgradable = false;
+
+        }
+    }
+
+    public boolean isUpgradable() {
+        return isUpgradable;
+    }
 
     public void recycleBullet(Bullet bullet) {
         bullets.add(bullet);
@@ -84,13 +99,22 @@ public class Turret extends GSprite implements CompoundGSprite {
         this.enemies = enemies;
     }
 
+    public int getUpgradePrice() {
+        return upgradePrice;
+    }
+
+    public int getBuildPrice() {
+        return buildPrice;
+    }
+
+    public int getSellingPrice() {
+        return isUpgradable ? buildPrice / 2 : buildPrice;
+    }
+
+
     private boolean okToFire() {
         return canFireNextBullet && bullets.size() > 0;
     }
-
-//    public List<Bullet> getBullets() {
-//        return bullets;
-//    }
 
     @Override
     public void update() {
@@ -124,6 +148,17 @@ public class Turret extends GSprite implements CompoundGSprite {
 
     @Override
     public void destoryCompoundChildren() {
+        if (getGCanvas() != null) {
+            GameBoardCanvas g = (GameBoardCanvas) getGCanvas();
+            for (Bullet bullet : bullets) {
+                bullet.destory();
+            }
+            g.remove(this);
+        }
 
+    }
+
+    public void towerUpgrade() {
+        isUpgradable = false;
     }
 }

@@ -1,6 +1,7 @@
 package com.jads.geometrydefense.entities.attackers.bullets;
 
 
+import com.jads.geometrydefense.GameBoardCanvas;
 import com.jads.geometrydefense.entities.attackers.turrets.Turret;
 import com.jads.geometrydefense.entities.enemies.Enemy;
 import com.jads.geometrydefense.interfaces.Damager;
@@ -62,6 +63,14 @@ public class Bullet extends GSprite implements Damager, Cloneable {
         this.isFired = false;
         this.enemy = null;
         parent.recycleBullet(this);
+    }
+
+    public void destory() {
+        this.setVisible(false);
+        if (getGCanvas() != null) {
+            GameBoardCanvas g = (GameBoardCanvas) getGCanvas();
+            g.remove(this);
+        }
     }
 
     @Override

@@ -3,6 +3,8 @@ package com.jads.geometrydefense;
 import android.graphics.Point;
 import android.util.Log;
 
+import com.jads.geometrydefense.entities.attackers.turrets.BasicTurret;
+import com.jads.geometrydefense.entities.attackers.turrets.MovementSlowTurret;
 import com.jads.geometrydefense.entities.attackers.turrets.Turret;
 import com.jads.geometrydefense.entities.attackers.TurretFactory;
 import com.jads.geometrydefense.entities.attackers.turrets.TurretType;
@@ -14,12 +16,22 @@ import com.jads.geometrydefense.utils.Utils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 
-public class GameManager {
+public class GameManager extends Observable {
     private static final GameManager ourInstance = new GameManager();
 
     private static final boolean debug = false;
     public static final int FPS = 60;
+
+    private int gameLevel = 0;
+    private int maxLevel = 3;
+    private int playerInitialGold = 20;
+    private int playerGold = 20;
+    private int playerScore = 0;
+    private int playerHealth = 10;
+    private int playerInitialHealth = 10;
 
     private static List<List<Integer>> map;
     private List<Point> conceptPath = new ArrayList<>();
@@ -32,7 +44,6 @@ public class GameManager {
     }
 
     private GameManager() {
-        loadMap();
     }
 
     public Turret createTurret(TurretType turretType, GameBoardCanvas canvas) {
@@ -50,15 +61,15 @@ public class GameManager {
     }
 
 
-    private void loadMap() {
-        map = Utils.create2DIntMatrixFromFile(MyApplication.getContext(), "GameMap.txt");
-        Log.v("GameMap", Arrays.toString(map.toArray()));
+    private void loadMap(int gameLevel) {
+        map = Utils.create2DIntMatrixFromFile(MyApplication.getContext(), "map_level_" + gameLevel + ".txt");
+        Log.v("gameMap: ", Arrays.toString(map.toArray()));
 
         int m = map.size(), n = map.get(0).size();
         boolean[][] visited = new boolean[m][n];
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < n; j++) {
-                if (map.get(i).get(j) == 1 && !visited[i][j]) {
+                if (map.get(i).get(j) == 2 && !visited[i][j]) {
                     dfs(i, j, visited);
                 }
             }
@@ -79,6 +90,30 @@ public class GameManager {
         dfs(i, j - 1, visited);
     }
 
+    public void onEnemyDeath(int damage) {
+        playerScore += damage;
+        playerGold += damage / 2;
+        setChanged();
+        notifyObservers();
+    }
+
+    public void onEnemyEscape(int damage) {
+        playerHealth -= damage;
+        playerHealth = Math.max(playerHealth, 0);
+        setChanged();
+        notifyObservers();
+    }
+
+    public int getTurretPrice(TurretType turretType) {
+        if (turretType == TurretType.BASIC_TURRET) {
+            return BasicTurret.BUILD_PRICE;
+        } else if (turretType == TurretType.MOVEMENT_SLOW_TURRET) {
+            return MovementSlowTurret.BUILD_PRICE;
+        } else {
+            return 0;
+        }
+    }
+
     public static float getImageScaleCoefficient() {
         return map.get(0).size() * 1.071f;
     }
@@ -87,11 +122,68 @@ public class GameManager {
         return debug;
     }
 
-    public List<Point> getPath() {
+    public List<Point> getConceptPath() {
         return conceptPath;
     }
 
     public List<List<Integer>> getMap() {
         return map;
+    }
+
+    public void addObservers(Observer... observers) {
+        for (Observer observer : observers) {
+            addObserver(observer);
+        }
+    }
+
+    public int getPlayerHealth() {
+        return playerHealth;
+    }
+
+    public int getGameLevel() {
+        return gameLevel;
+    }
+
+    public int getPlayerGold() {
+        return playerGold;
+    }
+
+    public void setPlayerGold(int newPlayerGold) {
+        this.playerGold = newPlayerGold;
+        setChanged();
+        notifyObservers();
+    }
+
+    public int getPlayerScore() {
+        return playerScore;
+    }
+
+    public boolean isGameOver() {
+        return playerHealth == 0 || gameLevel > maxLevel;
+    }
+
+    public void loadNextMap() {
+        resetMap();
+        gameLevel++;
+        loadMap(gameLevel);
+        setChanged();
+        notifyObservers();
+    }
+
+    private void resetMap() {
+        if (map != null) {
+            map.clear();
+        }
+        conceptPath.clear();
+
+    }
+
+    public void startNewGame() {
+        resetMap();
+        playerGold = playerInitialGold;
+        playerHealth = playerInitialHealth;
+        playerScore = 0;
+        gameLevel = 0;
+        loadNextMap();
     }
 }

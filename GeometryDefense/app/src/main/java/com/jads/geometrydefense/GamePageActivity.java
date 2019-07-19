@@ -32,10 +32,14 @@ import com.jads.geometrydefense.entities.attackers.turrets.TurretType;
 public class GamePageActivity extends AppCompatActivity {
 
     private Button startGame;
+
+    private Button sellTower;
+    private Button upgradeTower;
     private GameBoardCanvas canvas;
     private ImageView basicTower;
     private ImageView movementSlowTower;
     private View towerMenu;
+    private View operationMenu;
     private boolean gameStarted = false;
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -64,6 +68,9 @@ public class GamePageActivity extends AppCompatActivity {
         basicTower = findViewById(R.id.basic_tower);
         movementSlowTower = findViewById(R.id.movement_slow_tower);
         towerMenu = findViewById(R.id.tower_menu);
+        operationMenu = findViewById(R.id.operation_menu);
+        sellTower = findViewById(R.id.sell_tower);
+        upgradeTower = findViewById(R.id.upgrade_tower);
 
         startGame.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -76,11 +83,12 @@ public class GamePageActivity extends AppCompatActivity {
             }
         });
 
-        // TODO: Write a recycleview or listview here instead of setting of onclick for every tower
+        // TODO: Write a recycleview or listview here instead of setting up onclick for every tower
         basicTower.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 canvas.onTowerSelected(TurretType.BASIC_TURRET);
+                focusOff();
             }
         });
 
@@ -88,6 +96,23 @@ public class GamePageActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 canvas.onTowerSelected(TurretType.MOVEMENT_SLOW_TURRET);
+                focusOff();
+            }
+        });
+
+        sellTower.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                canvas.sellTower();
+                focusOff();
+            }
+        });
+
+        upgradeTower.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                canvas.upgradeTower();
+                focusOff();
             }
         });
 
@@ -117,12 +142,20 @@ public class GamePageActivity extends AppCompatActivity {
         });
     }
 
-    public void focusOn() {
-        towerMenu.setVisibility(View.VISIBLE);
+    public void focusOn(boolean isOccupied) {
+        if (isOccupied) {
+            operationMenu.setVisibility(View.VISIBLE);
+            towerMenu.setVisibility(View.GONE);
+        } else {
+            towerMenu.setVisibility(View.VISIBLE);
+            operationMenu.setVisibility(View.GONE);
+        }
+
     }
 
     public void focusOff() {
         towerMenu.setVisibility(View.GONE);
+        operationMenu.setVisibility(View.GONE);
     }
 
     public boolean checkSelfPermission(String permission, int requestCode) {
@@ -208,13 +241,13 @@ public class GamePageActivity extends AppCompatActivity {
         stopService(service);
     }
 
-    private void pauseGame() {
+    public void pauseGame() {
         canvas.pauseGame();
         gameStarted = false;
         startGame.setText("Start");
     }
 
-    private void resumeGame() {
+    public void resumeGame() {
         canvas.resumeGame();
         gameStarted = true;
         startGame.setText("Pause");
