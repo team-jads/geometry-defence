@@ -52,8 +52,8 @@ public class HealthBar extends GSprite implements CompoundGSprite {
 
     @Override
     public GSprite setLocation(float x, float y) {
-        frame.setLocation(x, y - 10);
-        fill.setLocation(x, y - 10);
+        frame.setLocation(x, y - 20);
+        fill.setLocation(x, y - 20);
         return super.setLocation(x, y);
     }
 

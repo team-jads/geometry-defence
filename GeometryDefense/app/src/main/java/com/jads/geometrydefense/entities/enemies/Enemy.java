@@ -102,7 +102,7 @@ public abstract class Enemy extends GSprite implements Damageable, CompoundGSpri
     public void update() {
         super.update();
         if (movingProgress >= 1) {
-            movingProgress = 0;
+            movingProgress -= 1;
             previousPoint = nextPoint;
             if (counter + 1 != path.size()) {
                 nextPoint = path.get(++counter);
