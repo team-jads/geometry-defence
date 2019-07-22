@@ -5,8 +5,10 @@ import android.content.Context;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Point;
+import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -90,7 +92,14 @@ public class GameBoardCanvas extends GCanvas {
     public void setUpNewGame() {
         cleanUpBoard();
 
-        enemyCount = 10;
+        if (gm.getCurrentLevel() == 1) {
+            enemyCount = 15;
+        } else if (gm.getCurrentLevel() == 2) {
+            enemyCount = 20;
+        } else {
+            enemyCount = 25;
+        }
+
 
         List<List<Integer>> map = gm.getMap();
         int rows = map.size();
@@ -161,7 +170,9 @@ public class GameBoardCanvas extends GCanvas {
             }
             remove(turretLand);
         }
-        for (GSprite sprite: blackHoles) {
+        turretLands.clear();
+
+        for (GSprite sprite : blackHoles) {
             remove(sprite);
         }
     }
@@ -261,7 +272,7 @@ public class GameBoardCanvas extends GCanvas {
 
     private void canvasOnDraw() {
         int tickCount = getAnimationTickCount();
-        if (game == null && tickCount % 60 == 0 && enemyCount != 0) {
+        if (game == null && tickCount % 30 == 0 && enemyCount != 0) {
             if (rand.nextBoolean()) {
                 addNewEnemy(EnemyType.OVAL_ENEMY);
             } else {
@@ -296,11 +307,19 @@ public class GameBoardCanvas extends GCanvas {
         if (obj instanceof Enemy) {
             enemies.remove(obj);
             if (enemies.size() == 0 && enemyCount == 0) {
-                if (gm.isGameOver()) {
+                if (gm.isGameOver() || gm.getCurrentLevel() == 3) {
                     doGameOverShit();
                 } else {
-//                    ((GamePageActivity) getActivity()).pauseGame();
-                    pauseGame();
+                    new java.util.Timer().schedule(
+                            new java.util.TimerTask() {
+                                @Override
+                                public void run() {
+                                    pauseGame();
+                                }
+                            },
+                            100
+                    );
+
                     gm.loadNextMap();
                     setUpNewGame();
                     new java.util.Timer().schedule(
@@ -328,6 +347,12 @@ public class GameBoardCanvas extends GCanvas {
             gameOver = true;
             pauseGame();
             if (game == null) {
+                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+                SharedPreferences.Editor editor = preferences.edit();
+                String raw = preferences.getString("Score", "");
+                raw += gm.getPlayerScore() + ",";
+                editor.putString("Score", raw);
+                editor.apply();
                 new AlertDialog.Builder(getContext())
                         .setTitle("Game Over!")
                         .setCancelable(false)

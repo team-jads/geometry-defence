@@ -8,6 +8,7 @@ public class OvalEnemy extends Enemy {
     public OvalEnemy(GObject object) {
         super(object);
         initilizeHealth(2);
+        movingSpeed *= 2;
         this.setFillColor(GColor.makeColor(255, 69, 0));
     }
 }

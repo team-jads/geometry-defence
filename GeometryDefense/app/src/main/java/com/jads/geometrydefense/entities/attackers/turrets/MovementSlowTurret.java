@@ -14,8 +14,8 @@ import stanford.androidlib.graphics.GObject;
 import stanford.androidlib.graphics.GOval;
 
 public class MovementSlowTurret extends Turret {
-    public static int BUILD_PRICE = 15;
-    public static int UPGRADE_PRICE = 7;
+    public static int BUILD_PRICE = 10;
+    public static int UPGRADE_PRICE = 5;
 
     public MovementSlowTurret(GObject turret) {
         super(turret);
@@ -28,7 +28,7 @@ public class MovementSlowTurret extends Turret {
         bullet.registerBulletModifier(new SlowModifier(bullet, 0.5f));
         bullet.setVelocityX(15f);
         bullet.setVelocityY(15f);
-        bullet.setDamage(0);
+        bullet.setDamage(1);
 
         this.bulletPrototype = bullet;
         turretInit();

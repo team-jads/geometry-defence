@@ -139,6 +139,12 @@ public class Turret extends GSprite implements CompoundGSprite {
         }
     }
 
+    public void setDamage(int damage) {
+        for (Bullet bullet: bullets) {
+            bullet.setDamage(damage);
+        }
+    }
+
     @Override
     public List<GSprite> getCompoundChildren() {
         List<GSprite> children = new ArrayList<>();

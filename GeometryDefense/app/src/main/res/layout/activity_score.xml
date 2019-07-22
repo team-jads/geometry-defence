@@ -2,7 +2,6 @@
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -64,7 +63,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <EditText
-            android:id="@+id/code_text_5"
+            android:id="@+id/first_score"
             android:layout_width="127dp"
             android:layout_height="73dp"
             android:layout_marginStart="8dp"
@@ -76,7 +75,7 @@
             android:inputType="none"
             android:selectAllOnFocus="false"
             android:singleLine="true"
-            android:text="50"
+            android:text="0"
             android:textAlignment="center"
             android:textColor="#F3F1F1"
             android:textSize="15sp"
@@ -87,7 +86,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <EditText
-            android:id="@+id/code_text_6"
+            android:id="@+id/second_score"
             android:layout_width="105dp"
             android:layout_height="73dp"
             android:layout_marginStart="8dp"
@@ -99,7 +98,7 @@
             android:inputType="none"
             android:selectAllOnFocus="false"
             android:singleLine="true"
-            android:text="80"
+            android:text="0"
             android:textAlignment="center"
             android:textColor="#F3F1F1"
             android:textSize="15sp"

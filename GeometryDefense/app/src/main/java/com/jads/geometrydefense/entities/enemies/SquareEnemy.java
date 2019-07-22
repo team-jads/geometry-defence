@@ -6,7 +6,7 @@ import stanford.androidlib.graphics.GObject;
 public class SquareEnemy extends Enemy {
     public SquareEnemy(GObject object) {
         super(object);
-        initilizeHealth(3);
+        initilizeHealth(4);
         this.setFillColor(GColor.makeColor(204, 0, 102));
     }
 
