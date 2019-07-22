@@ -23,15 +23,14 @@
             android:name=".ScoreActivity"
             android:launchMode="singleTop" />
         <activity
-            android:name=".UserQRCodeActivity"
-            android:launchMode="singleTop" />
-        <activity
             android:name=".FindPlayerActivity"
-            android:launchMode="singleTop" />
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".GamePageActivity"
             android:launchMode="singleInstance"
-            android:noHistory="true"/>
+            android:noHistory="true"
+            android:screenOrientation="portrait" />
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
