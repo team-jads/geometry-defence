@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1014848324306",
+    "firebase_url": "https://geometrydefense-e93b9.firebaseio.com",
+    "project_id": "geometrydefense-e93b9",
+    "storage_bucket": "geometrydefense-e93b9.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1014848324306:android:94a76e5d56d256a2",
+        "android_client_info": {
+          "package_name": "com.jads.geometrydefense"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1014848324306-e3qo8juuh54b4eismffa6l3ff5dcg861.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.jads.geometrydefense",
+            "certificate_hash": "e759dbe190f1e1c59aa456958a1432814be6dc75"
+          }
+        },
+        {
+          "client_id": "1014848324306-7gr98u5hq1a6i85goe16oj7toq0vaq7d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCqsxr_WSZLEzdfzyURJBVcOwfq03bcQTw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1014848324306-7gr98u5hq1a6i85goe16oj7toq0vaq7d.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

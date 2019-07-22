@@ -1,41 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.jads.geometrydefense">
 
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.hardware.camera" />
+    <uses-permission android:name="android.hardware.camera.autofocus" />
 
     <application
+        android:hardwareAccelerated="true"
         android:name=".MyApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen"
-
-        >
-        <activity android:name=".ScoreActivity"/>
-        <activity android:name="UserQRCodeActivity"/>
-        <activity android:name=".FindPlayerActivity" />
-        <activity android:name=".GamePageActivity" />
-        <activity android:name=".MainActivity" />
-        <activity android:name=".LoginActivity" >
-            <intent-filter >
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen">
+        <activity android:name=".GameActivity"></activity>
+        <activity
+            android:name=".ScoreActivity"
+            android:launchMode="singleTop" />
+        <activity
+            android:name=".UserQRCodeActivity"
+            android:launchMode="singleTop" />
+        <activity
+            android:name=".FindPlayerActivity"
+            android:launchMode="singleTop" />
+        <activity
+            android:name=".GamePageActivity"
+            android:launchMode="singleInstance"
+            android:noHistory="true"/>
+        <activity android:name=".MainActivity">
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
+
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
-        <service android:name="com.jads.geometrydefense.ScreenRecordService"/>
 
+        <service android:name=".ScreenRecordService" />
     </application>
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.hardware.camera" />
-    <uses-permission android:name="android.hardware.camera.autofocus" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
 </manifest>

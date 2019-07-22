@@ -7,12 +7,16 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Point;
-import android.support.v4.util.Pair;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.core.util.Pair;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentReference;
 import com.jads.geometrydefense.entities.labels.GameLevelLabel;
 import com.jads.geometrydefense.entities.labels.GoldLabel;
 import com.jads.geometrydefense.entities.labels.PlayerHealthLabel;
@@ -25,7 +29,10 @@ import com.jads.geometrydefense.entities.enemies.EnemyType;
 import com.jads.geometrydefense.interfaces.CompoundGSprite;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
 import java.util.Random;
@@ -254,7 +261,7 @@ public class GameBoardCanvas extends GCanvas {
 
     private void canvasOnDraw() {
         int tickCount = getAnimationTickCount();
-        if (tickCount % 60 == 0 && enemyCount != 0) {
+        if (game == null && tickCount % 60 == 0 && enemyCount != 0) {
             if (rand.nextBoolean()) {
                 addNewEnemy(EnemyType.OVAL_ENEMY);
             } else {
@@ -262,6 +269,12 @@ public class GameBoardCanvas extends GCanvas {
             }
 
             enemyCount--;
+        }
+        if (game != null) {
+            if (tickCount % 60 == 0) {
+                gm.setPlayerGold(gm.getPlayerGold() + 1);
+            }
+            catchUpSummon();
         }
         for (GSprite sprite : gameSprites) {
             sprite.update();
@@ -309,28 +322,44 @@ public class GameBoardCanvas extends GCanvas {
         }
     }
 
+    private boolean gameOver = false;
     public void doGameOverShit() {
-        pauseGame();
-        new AlertDialog.Builder(getContext())
-                .setTitle("Game Over!")
-                .setCancelable(false)
-                .setMessage("Your final score is: " + gm.getPlayerScore())
-                .setPositiveButton("Leader Board", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        Intent gamePage = new Intent(getContext(), ScoreActivity.class);
-                        getContext().startActivity(gamePage);
-                    }
-                })
+        if (!gameOver) {
+            gameOver = true;
+            pauseGame();
+            if (game == null) {
+                new AlertDialog.Builder(getContext())
+                        .setTitle("Game Over!")
+                        .setCancelable(false)
+                        .setMessage("Your final score is: " + gm.getPlayerScore())
+                        .setPositiveButton("Leader Board", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                getActivity().finish();
+                                Intent gamePage = new Intent(getContext(), ScoreActivity.class);
+                                getContext().startActivity(gamePage);
+                            }
+                        })
 
-                .setNegativeButton("Main Menu", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        Intent gamePage = new Intent(getContext(), MainActivity.class);
-                        getContext().startActivity(gamePage);
-                    }
-                })
-                .setIcon(android.R.drawable.ic_dialog_alert)
-                .show();
+                        .setNegativeButton("Main Menu", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                getActivity().finish();
+                            }
+                        })
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
+            } else {
+                game.update(uid + "_health", 0);
+                new AlertDialog.Builder(getContext())
+                        .setTitle("Game Over!")
+                        .setMessage(victory ? "You won!" : "You lost")
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .setOnDismissListener(a -> {
+                            getActivity().finish();
+                        })
+                        .show();
+            }
+        }
     }
 
 
@@ -350,6 +379,55 @@ public class GameBoardCanvas extends GCanvas {
             }
             gameSprites.add(sprite);
             add(sprite);
+        }
+    }
+
+    private DocumentReference game = null;
+    private String uid;
+    private String opponentUid;
+    private int summonIndex = 0;
+    private List<String> summoned = new ArrayList<String>();
+    private boolean victory = false;
+
+    public void setGameReference(DocumentReference game) {
+        this.game = game;
+        uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        game.get().addOnSuccessListener(initSnap -> {
+            List<String> players = (List<String>)initSnap.get("players");
+            if (players.get(0).equals(uid)) {
+                opponentUid = players.get(1);
+            } else {
+                opponentUid = players.get(0);
+            }
+            game.collection("summon").whereEqualTo("to", uid).addSnapshotListener((querySnap, e) -> {
+                for (Iterator<DocumentChange> it = querySnap.getDocumentChanges().iterator(); it.hasNext();) {
+                    DocumentChange c = it.next();
+                    if (c.getType() == DocumentChange.Type.ADDED) {
+                        summoned.add((String)c.getDocument().get("type"));
+                    }
+                }
+            });
+            game.addSnapshotListener((snap, e) -> {
+                if ((long)snap.get(opponentUid + "_health") <= 0) {
+                    victory = true;
+                    doGameOverShit();
+                }
+            });
+        });
+    }
+
+    private void catchUpSummon() {
+        while (summonIndex != summoned.size()) {
+            String type = summoned.get(summonIndex++);
+            switch (type) {
+                case "circle":
+                    addNewEnemy(EnemyType.OVAL_ENEMY);
+                    break;
+                case "square":
+                    addNewEnemy(EnemyType.SQUARE_ENEMY);
+                    break;
+                default:
+            }
         }
     }
 }

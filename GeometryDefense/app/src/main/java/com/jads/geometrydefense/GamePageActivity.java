@@ -1,8 +1,15 @@
 package com.jads.geometrydefense;
 
 import android.app.ActivityManager;
-import android.support.v7.app.AppCompatActivity;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -15,9 +22,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.projection.MediaProjectionManager;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -25,9 +29,16 @@ import android.view.View.OnClickListener;
 import android.widget.Toast;
 import android.view.KeyEvent;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.jads.geometrydefense.entities.attackers.TurretLand;
 
 import com.jads.geometrydefense.entities.attackers.turrets.TurretType;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 public class GamePageActivity extends AppCompatActivity {
 
@@ -38,8 +49,8 @@ public class GamePageActivity extends AppCompatActivity {
     private GameBoardCanvas canvas;
     private ImageView basicTower;
     private ImageView movementSlowTower;
-    private View towerMenu;
-    private View operationMenu;
+    private Button circle;
+    private Button square;
     private boolean gameStarted = false;
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -59,6 +70,8 @@ public class GamePageActivity extends AppCompatActivity {
     private Button record;
     public boolean recording = false;
 
+    private DocumentReference game = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,10 +80,48 @@ public class GamePageActivity extends AppCompatActivity {
         canvas = findViewById(R.id.game_view);
         basicTower = findViewById(R.id.basic_tower);
         movementSlowTower = findViewById(R.id.movement_slow_tower);
-        towerMenu = findViewById(R.id.tower_menu);
-        operationMenu = findViewById(R.id.operation_menu);
         sellTower = findViewById(R.id.sell_tower);
         upgradeTower = findViewById(R.id.upgrade_tower);
+        circle = findViewById(R.id.circle);
+        square = findViewById(R.id.square);
+
+        Intent intent = getIntent();
+        String gameId = intent.getStringExtra("game_id");
+
+        if (gameId != null) {
+            startGame.setEnabled(false);
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            game = db.collection("game").document(gameId);
+            game.get().addOnSuccessListener(snapshot -> {
+                String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                String opponentUid;
+                List<String> players = (List<String>)snapshot.get("players");
+                if (players.get(0).equals(uid)) {
+                    opponentUid = players.get(1);
+                } else {
+                    opponentUid = players.get(0);
+                }
+                canvas.setGameReference(game);
+                resumeGame();
+                startGame.setVisibility(View.GONE);
+                GameManager gm = GameManager.getInstance();
+                circle.setOnClickListener(e -> {
+                    if (gm.purchase(3))
+                        game.collection("summon").add(new HashMap<String, Object>() {{
+                            put("type", "circle");
+                            put("to", opponentUid);
+                        }});
+                });
+                square.setOnClickListener(e -> {
+                    if (gm.purchase(5))
+                        game.collection("summon").add(new HashMap<String, Object>() {{
+                            put("type", "square");
+                            put("to", opponentUid);
+                        }});
+                });
+            });
+            focusOff();
+        }
 
         startGame.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -140,22 +191,35 @@ public class GamePageActivity extends AppCompatActivity {
                 recording = !recording;
             }
         });
+        focusOff();
     }
 
     public void focusOn(boolean isOccupied) {
+        circle.setVisibility(View.GONE);
+        square.setVisibility(View.GONE);
         if (isOccupied) {
-            operationMenu.setVisibility(View.VISIBLE);
-            towerMenu.setVisibility(View.GONE);
+            upgradeTower.setVisibility(View.VISIBLE);
+            sellTower.setVisibility(View.VISIBLE);
+            basicTower.setVisibility(View.GONE);
+            movementSlowTower.setVisibility(View.GONE);
         } else {
-            towerMenu.setVisibility(View.VISIBLE);
-            operationMenu.setVisibility(View.GONE);
+            upgradeTower.setVisibility(View.GONE);
+            sellTower.setVisibility(View.GONE);
+            basicTower.setVisibility(View.VISIBLE);
+            movementSlowTower.setVisibility(View.VISIBLE);
         }
 
     }
 
     public void focusOff() {
-        towerMenu.setVisibility(View.GONE);
-        operationMenu.setVisibility(View.GONE);
+        upgradeTower.setVisibility(View.GONE);
+        sellTower.setVisibility(View.GONE);
+        basicTower.setVisibility(View.GONE);
+        movementSlowTower.setVisibility(View.GONE);
+        if (game != null) {
+            circle.setVisibility(View.VISIBLE);
+            square.setVisibility(View.VISIBLE);
+        }
     }
 
     public boolean checkSelfPermission(String permission, int requestCode) {
@@ -169,29 +233,31 @@ public class GamePageActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
-        Log.d(TAG, "onRequestPermissionsResult " + grantResults[0] + " " + requestCode);
-        switch (requestCode) {
-            case PERMISSION_REQ_ID_RECORD_AUDIO:
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, PERMISSION_REQ_ID_WRITE_EXTERNAL_STORAGE);
-                } else {
-                    isPermissible = false;
-                    showLongToast("No permission for " + Manifest.permission.RECORD_AUDIO);
-                    finish();
-                }
-                break;
-            case PERMISSION_REQ_ID_WRITE_EXTERNAL_STORAGE:
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.d(TAG, "onRequestPermissionsResult: isPermissible = " + isPermissible);
-                    isPermissible = true;
-                } else {
-                    isPermissible = false;
-                    showLongToast("No permission for " + Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                    finish();
-                }
-                break;
-            default:
-                break;
+        if (grantResults.length != 0) {
+            Log.d(TAG, "onRequestPermissionsResult " + grantResults[0] + " " + requestCode);
+            switch (requestCode) {
+                case PERMISSION_REQ_ID_RECORD_AUDIO:
+                    if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                        checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, PERMISSION_REQ_ID_WRITE_EXTERNAL_STORAGE);
+                    } else {
+                        isPermissible = false;
+                        showLongToast("No permission for " + Manifest.permission.RECORD_AUDIO);
+                        finish();
+                    }
+                    break;
+                case PERMISSION_REQ_ID_WRITE_EXTERNAL_STORAGE:
+                    if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                        Log.d(TAG, "onRequestPermissionsResult: isPermissible = " + isPermissible);
+                        isPermissible = true;
+                    } else {
+                        isPermissible = false;
+                        showLongToast("No permission for " + Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                        finish();
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
     }
 

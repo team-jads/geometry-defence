@@ -154,6 +154,14 @@ public class GameManager extends Observable {
         notifyObservers();
     }
 
+    public boolean purchase(int amount) {
+        if (amount <= this.playerGold) {
+            setPlayerGold(this.playerGold - amount);
+            return true;
+        }
+        return false;
+    }
+
     public int getPlayerScore() {
         return playerScore;
     }
