@@ -5,8 +5,10 @@ import android.content.Context;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Point;
+import android.preference.PreferenceManager;
 import android.support.v4.util.Pair;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -154,6 +156,8 @@ public class GameBoardCanvas extends GCanvas {
             }
             remove(turretLand);
         }
+        turretLands.clear();
+
         for (GSprite sprite: blackHoles) {
             remove(sprite);
         }
@@ -286,14 +290,23 @@ public class GameBoardCanvas extends GCanvas {
                 if (gm.isGameOver()) {
                     doGameOverShit();
                 } else {
-//                    ((GamePageActivity) getActivity()).pauseGame();
-                    pauseGame();
+                    new java.util.Timer().schedule(
+                            new java.util.TimerTask() {
+                                @Override
+                                public void run() {
+                                    pauseGame();
+                                }
+                            },
+                            100
+                    );
+
                     gm.loadNextMap();
                     setUpNewGame();
                     new java.util.Timer().schedule(
                             new java.util.TimerTask() {
                                 @Override
                                 public void run() {
+//                                    setUpNewGame();
                                     resumeGame();
                                 }
                             },
@@ -306,11 +319,18 @@ public class GameBoardCanvas extends GCanvas {
                     doGameOverShit();
                 }
             }
-        }
+        } 
     }
 
     public void doGameOverShit() {
         pauseGame();
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        SharedPreferences.Editor editor = preferences.edit();
+        String raw = preferences.getString("Score", "");
+        raw += gm.getPlayerScore() + ",";
+        editor.putString("Score", raw);
+        editor.apply();
+
         new AlertDialog.Builder(getContext())
                 .setTitle("Game Over!")
                 .setCancelable(false)

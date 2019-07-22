@@ -42,7 +42,7 @@ public class ScreenRecordService extends Service {
     private MediaRecorder mMediaRecorder;
     private VirtualDisplay mVirtualDisplay;
 
-    private String videoFilePath="";
+    private String videoFilePath = "";
 
     @Override
     public void onCreate() {
@@ -144,23 +144,22 @@ public class ScreenRecordService extends Service {
     }
 
     private void shareVideo() {
-        //Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
         //Necessary for publishing to Youtube
         scanVideoFile();
 
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
-        shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+        shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         shareIntent.setType("video/mp4");
         shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "GEOMETRY DEFENSE VIDEO");
-        shareIntent.putExtra(android.content.Intent.EXTRA_TEXT,"Gameplay");
+        shareIntent.putExtra(android.content.Intent.EXTRA_TEXT, "Gameplay");
         shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse(videoFilePath));
         //startActivityForResult(Intent.createChooser(shareIntent, "Share Your Video"), shareIntent);
-        shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(Intent.createChooser(shareIntent, "Share Your Video"));
+        getApplicationContext().startActivity(Intent.createChooser(shareIntent, "Share Your Video"));
     }
 
     private void scanVideoFile() {
-        MediaScannerConnection.scanFile(this, new String[] { videoFilePath }, null,
+        MediaScannerConnection.scanFile(this, new String[]{videoFilePath}, null,
                 new MediaScannerConnection.OnScanCompletedListener() {
                     public void onScanCompleted(String path, Uri uri) {
                         Log.d(TAG, "onScanCompleted uri " + uri);
