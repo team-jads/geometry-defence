@@ -18,7 +18,7 @@
         <activity android:name=".ScoreActivity"/>
         <activity android:name="UserQRCodeActivity"/>
         <activity android:name=".FindPlayerActivity" />
-        <activity android:name=".GamePageActivity" />
+        <activity android:name=".GamePageActivity" android:screenOrientation="portrait" />
         <activity android:name=".MainActivity" />
         <activity android:name=".LoginActivity" >
             <intent-filter >
