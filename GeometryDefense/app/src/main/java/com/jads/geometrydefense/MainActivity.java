@@ -73,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateUserState() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        ((Button)findViewById(R.id.find_player)).setEnabled(user != null);
         ((Button)findViewById(R.id.login_logout)).setText(user == null ? "Login" : "Logout");
         ((TextView)findViewById(R.id.current_user_string)).setText(user == null ? "Login to save high scores!" : String.format("Welcome %s", user.getDisplayName()));
     }
