@@ -124,7 +124,7 @@
             android:layout_height="31dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="28dp"
-            android:layout_marginEnd="132dp"
+            android:layout_marginEnd="8dp"
             android:background="#D8EAEC"
             android:fontFamily="@font/archivo_black"
             android:hint="password"
@@ -134,7 +134,6 @@
             android:textAlignment="textStart"
             android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/username_input" />
 
@@ -142,8 +141,9 @@
             android:id="@+id/username_input"
             android:layout_width="145dp"
             android:layout_height="31dp"
+            android:layout_marginStart="8dp"
             android:layout_marginTop="80dp"
-            android:layout_marginEnd="132dp"
+            android:layout_marginEnd="8dp"
             android:background="#D8EAEC"
             android:editable="true"
             android:fontFamily="@font/archivo_black"
@@ -154,6 +154,7 @@
             android:textAlignment="textStart"
             android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/title_2" />
 
     </android.support.constraint.ConstraintLayout>
