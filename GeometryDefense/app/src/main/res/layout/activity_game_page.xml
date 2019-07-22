@@ -22,22 +22,22 @@
             android:id="@+id/operation_menu"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:visibility="gone"
-            android:layout_toRightOf="@id/record">
+            android:layout_toRightOf="@id/record"
+            android:visibility="gone">
 
             <Button
                 android:id="@+id/sell_tower"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="15dp"
-                android:text="SELL" />
+                android:text="SELL"
+                android:textSize="10sp" />
 
             <Button
                 android:id="@+id/upgrade_tower"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="15dp"
-                android:text="UPGRADE" />
+                android:text="UPGRADE"
+                android:textSize="10sp" />
         </LinearLayout>
 
         <LinearLayout
@@ -74,7 +74,8 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:fontFamily="@font/allerta_stencil"
-            android:text="start" />
+            android:text="start"
+            android:textSize="10sp" />
 
         <Button
             android:id="@+id/record"
@@ -82,7 +83,8 @@
             android:layout_height="wrap_content"
             android:layout_toRightOf="@id/start"
             android:fontFamily="@font/allerta_stencil"
-            android:text="Record" />
+            android:text="Record"
+            android:textSize="10sp" />
 
 
     </RelativeLayout>

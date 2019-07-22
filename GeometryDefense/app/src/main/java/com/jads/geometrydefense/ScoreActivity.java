@@ -49,7 +49,7 @@ public class ScoreActivity extends AppCompatActivity {
         }
         if (ints.size() > 1) {
             secondScore.setText(String.valueOf(ints.get(1)));
-            newString += ints.get(1);
+            newString += ints.get(1) + ",";
         }
 
 

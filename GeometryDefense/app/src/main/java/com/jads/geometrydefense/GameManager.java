@@ -28,7 +28,7 @@ public class GameManager extends Observable {
     private int gameLevel = 0;
     private int maxLevel = 3;
     private int playerInitialGold = 20;
-    private int playerGold = 20;
+    private int playerGold = 35;
     private int playerScore = 0;
     private int playerHealth = 10;
     private int playerInitialHealth = 10;
@@ -160,6 +160,10 @@ public class GameManager extends Observable {
 
     public boolean isGameOver() {
         return playerHealth == 0 || gameLevel > maxLevel;
+    }
+
+    public int getCurrentLevel() {
+        return gameLevel;
     }
 
     public void loadNextMap() {

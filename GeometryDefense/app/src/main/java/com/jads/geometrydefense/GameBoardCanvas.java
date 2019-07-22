@@ -85,7 +85,14 @@ public class GameBoardCanvas extends GCanvas {
     public void setUpNewGame() {
         cleanUpBoard();
 
-        enemyCount = 10;
+        if (gm.getCurrentLevel() == 1) {
+            enemyCount = 15;
+        } else if (gm.getCurrentLevel() == 2) {
+            enemyCount = 20;
+        } else {
+            enemyCount = 25;
+        }
+
 
         List<List<Integer>> map = gm.getMap();
         int rows = map.size();
@@ -158,7 +165,7 @@ public class GameBoardCanvas extends GCanvas {
         }
         turretLands.clear();
 
-        for (GSprite sprite: blackHoles) {
+        for (GSprite sprite : blackHoles) {
             remove(sprite);
         }
     }
@@ -258,7 +265,7 @@ public class GameBoardCanvas extends GCanvas {
 
     private void canvasOnDraw() {
         int tickCount = getAnimationTickCount();
-        if (tickCount % 60 == 0 && enemyCount != 0) {
+        if (tickCount % 30 == 0 && enemyCount != 0) {
             if (rand.nextBoolean()) {
                 addNewEnemy(EnemyType.OVAL_ENEMY);
             } else {
@@ -287,7 +294,7 @@ public class GameBoardCanvas extends GCanvas {
         if (obj instanceof Enemy) {
             enemies.remove(obj);
             if (enemies.size() == 0 && enemyCount == 0) {
-                if (gm.isGameOver()) {
+                if (gm.isGameOver() || gm.getCurrentLevel() == 3) {
                     doGameOverShit();
                 } else {
                     new java.util.Timer().schedule(
@@ -319,7 +326,7 @@ public class GameBoardCanvas extends GCanvas {
                     doGameOverShit();
                 }
             }
-        } 
+        }
     }
 
     public void doGameOverShit() {

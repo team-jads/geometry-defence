@@ -27,7 +27,8 @@ public class BasicTurret extends Turret {
     @Override
     public void towerUpgrade() {
         super.towerUpgrade();
-        this.fireRate += 2;
+//        this.fireRate += 2;
+        setDamage(2);
         SimpleBitmap bitmap = SimpleBitmap.with(getGCanvas());
         Bitmap scaled = bitmap.scaleToWidth(R.drawable.tower1_upgrade, getGCanvas().getWidth() / GameManager.getImageScaleCoefficient());
         setBitmap(scaled);
