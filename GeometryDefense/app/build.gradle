@@ -29,6 +29,10 @@ android {
             url "https://raw.github.com/embarkmobile/zxing-android-minimal/mvn-repo/maven-repository/"
         }
     }
+
+    lintOptions {
+        checkReleaseBuilds false
+    }
 }
 
 dependencies {
